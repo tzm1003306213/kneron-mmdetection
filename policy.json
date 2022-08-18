@@ -1,0 +1,16 @@
+{
+    "conv2d_pruner": {
+      "init_sparsity": 0.0,
+      "target_sparsity": 0.4,
+      "start_epoch": 0,
+      "end_epoch": 9,
+      "prune_dw_conv": false
+    },
+    "linear_pruner": {
+      "init_sparsity": 0.0,
+      "target_sparsity": 0.5,
+      "start_epoch": 0,
+      "end_epoch": 9
+    }
+  }
+  
