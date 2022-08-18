@@ -2,12 +2,11 @@ _base_ = ['../_base_/schedules/schedule_1x.py', '../_base_/default_runtime.py']
 
 img_scale = (640, 640)
 
-load_from = 'work_dirs/latest.pth'
 custom_imports = dict(imports=['kqat.mmcv.freeze_scheduler', 'kqat.mmcv.refine_hooks',
                                'kqat.mmcv.lr_scheduler', 'kqat.mmcv.kqat_loss_optimizer',
                                'kqat.mmcv.prune_scheduler'],
                       allow_failed_imports=False)
-custom_hooks = [dict(type='FreezeScheduler', sched='12vC,18E,24d,33p', priority='HIGH'),
+custom_hooks_qat = [dict(type='FreezeScheduler', sched='12vC,18E,24d,33p', priority='HIGH'),
                 dict(type='RefineHooks', kqat_loss=True, priority='VERY_LOW'),
                 dict(type='LrScheduler', sched='cosine', lr_cycle_limit=3, cooldown_epochs=6, priority='VERY_HIGH'),
                 dict(type='KqatOptimizerHook', tao=0.55, gamma=10),
@@ -169,6 +168,7 @@ custom_hooks = [
         momentum=0.0001,
         priority=49)
 ]
+custom_hooks.extend(custom_hooks_qat)
 checkpoint_config = dict(interval=interval)
 evaluation = dict(
     save_best='auto',
