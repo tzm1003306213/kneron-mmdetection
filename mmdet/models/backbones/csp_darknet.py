@@ -10,6 +10,8 @@ from torch.nn.modules.batchnorm import _BatchNorm
 from ..builder import BACKBONES
 from ..utils import CSPLayer
 
+from torch.nn.quantized import FloatFunctional
+
 
 class Focus(nn.Module):
     """Focus width and height information into channel space.
@@ -45,6 +47,7 @@ class Focus(nn.Module):
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
             act_cfg=act_cfg)
+        self.ff = FloatFunctional()
 
     def forward(self, x):
         # shape of x (b,c,w,h) -> y(b,4c,w/2,h/2)
@@ -52,7 +55,8 @@ class Focus(nn.Module):
         patch_top_right = x[..., ::2, 1::2]
         patch_bot_left = x[..., 1::2, ::2]
         patch_bot_right = x[..., 1::2, 1::2]
-        x = torch.cat(
+        # x = torch.cat(
+        x = self.ff.cat(
             (
                 patch_top_left,
                 patch_bot_left,
@@ -112,10 +116,12 @@ class SPPBottleneck(BaseModule):
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
             act_cfg=act_cfg)
+        self.ff = FloatFunctional()
 
     def forward(self, x):
         x = self.conv1(x)
-        x = torch.cat([x] + [pooling(x) for pooling in self.poolings], dim=1)
+        # x = torch.cat([x] + [pooling(x) for pooling in self.poolings], dim=1)
+        x = self.ff.cat([x] + [pooling(x) for pooling in self.poolings], dim=1)
         x = self.conv2(x)
         return x
 

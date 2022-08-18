@@ -4,6 +4,7 @@ import torch.nn as nn
 from mmcv.cnn import ConvModule, DepthwiseSeparableConvModule
 from mmcv.runner import BaseModule
 
+from torch.nn.quantized import FloatFunctional
 
 class DarknetBottleneck(BaseModule):
     """The basic bottleneck block used in Darknet.
@@ -60,6 +61,8 @@ class DarknetBottleneck(BaseModule):
             act_cfg=act_cfg)
         self.add_identity = \
             add_identity and in_channels == out_channels
+        if self.add_identity:
+            self.ff = FloatFunctional()
 
     def forward(self, x):
         identity = x
@@ -67,7 +70,8 @@ class DarknetBottleneck(BaseModule):
         out = self.conv2(out)
 
         if self.add_identity:
-            return out + identity
+            # return out + identity
+            return self.ff.add(out, identity)
         else:
             return out
 
@@ -139,6 +143,7 @@ class CSPLayer(BaseModule):
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg) for _ in range(num_blocks)
         ])
+        self.ff = FloatFunctional()
 
     def forward(self, x):
         x_short = self.short_conv(x)
@@ -146,5 +151,6 @@ class CSPLayer(BaseModule):
         x_main = self.main_conv(x)
         x_main = self.blocks(x_main)
 
-        x_final = torch.cat((x_main, x_short), dim=1)
+        # x_final = torch.cat((x_main, x_short), dim=1)
+        x_final = self.ff.cat((x_main, x_short), dim=1)
         return self.final_conv(x_final)

@@ -9,6 +9,8 @@ from mmcv.runner import BaseModule
 from ..builder import NECKS
 from ..utils import CSPLayer
 
+from torch.nn.quantized import FloatFunctional
+
 
 @NECKS.register_module()
 class YOLOXPAFPN(BaseModule):
@@ -113,6 +115,9 @@ class YOLOXPAFPN(BaseModule):
                     conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg))
+        
+        self.ff1 = FloatFunctional()
+        self.ff2 = FloatFunctional()
 
     def forward(self, inputs):
         """
@@ -136,7 +141,8 @@ class YOLOXPAFPN(BaseModule):
             upsample_feat = self.upsample(feat_heigh)
 
             inner_out = self.top_down_blocks[len(self.in_channels) - 1 - idx](
-                torch.cat([upsample_feat, feat_low], 1))
+                self.ff1.cat([upsample_feat, feat_low], 1))
+                # torch.cat([upsample_feat, feat_low], 1))
             inner_outs.insert(0, inner_out)
 
         # bottom-up path
@@ -146,7 +152,8 @@ class YOLOXPAFPN(BaseModule):
             feat_height = inner_outs[idx + 1]
             downsample_feat = self.downsamples[idx](feat_low)
             out = self.bottom_up_blocks[idx](
-                torch.cat([downsample_feat, feat_height], 1))
+                self.ff2.cat([downsample_feat, feat_height], 1))
+                # torch.cat([downsample_feat, feat_height], 1))
             outs.append(out)
 
         # out convs

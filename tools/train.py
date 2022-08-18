@@ -20,6 +20,8 @@ from mmdet.models import build_detector
 from mmdet.utils import (collect_env, get_device, get_root_logger,
                          replace_cfg_vals, setup_multi_processes,
                          update_data_root)
+import kqat
+from timm.models import load_checkpoint
 
 
 def parse_args():
@@ -90,6 +92,12 @@ def parse_args():
         '--auto-scale-lr',
         action='store_true',
         help='enable automatically scaling LR.')
+
+    parser.add_argument(
+        '--state-dict', default='',
+        help='checkpoint to resume.')
+    kqat.add_qat_argument(parser)
+
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -215,6 +223,12 @@ def main():
         test_cfg=cfg.get('test_cfg'))
     model.init_weights()
 
+    if args.state_dict:
+        load_checkpoint(model, args.state_dict, strict=False)
+    if args.qat:
+        model, optimizer = kqat.create_qat_mmcv(args, model, (1, 3, 640, 640))
+    else: optimizer = None
+
     datasets = [build_dataset(cfg.data.train)]
     if len(cfg.workflow) == 2:
         val_dataset = copy.deepcopy(cfg.data.val)
@@ -232,6 +246,8 @@ def main():
         model,
         datasets,
         cfg,
+        args,
+        qat_opt=optimizer,
         distributed=distributed,
         validate=(not args.no_validate),
         timestamp=timestamp,

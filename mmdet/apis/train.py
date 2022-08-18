@@ -117,6 +117,8 @@ def auto_scale_lr(cfg, distributed, logger):
 def train_detector(model,
                    dataset,
                    cfg,
+                   args,
+                   qat_opt=None,
                    distributed=False,
                    validate=False,
                    timestamp=None,
@@ -164,7 +166,11 @@ def train_detector(model,
 
     # build optimizer
     auto_scale_lr(cfg, distributed, logger)
-    optimizer = build_optimizer(model, cfg.optimizer)
+    
+    if qat_opt is not None:
+        optimizer = qat_opt
+    else:
+        optimizer = build_optimizer(model, cfg.optimizer)
 
     runner = build_runner(
         cfg.runner,
@@ -237,8 +243,15 @@ def train_detector(model,
     if resume_from is not None:
         cfg.resume_from = resume_from
 
+    if args.onnx:
+        runner.call_hook('before_run')
     if cfg.resume_from:
         runner.resume(cfg.resume_from)
     elif cfg.load_from:
         runner.load_checkpoint(cfg.load_from)
+
+    if args.onnx:
+        import kqat
+        kqat.export_onnx_mmcv(runner, (1,3,640,640), args.onnx, ['input'])
+
     runner.run(data_loaders, cfg.workflow)
