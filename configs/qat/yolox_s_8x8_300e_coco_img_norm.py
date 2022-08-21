@@ -14,6 +14,8 @@ custom_hooks_qat = [dict(type='FreezeScheduler', sched='12vC,18E,24d,33p', prior
 find_unused_parameters = True
 
 # model settings
+norm_cfg = dict(type='SyncBN', requires_grad=True)
+
 model = dict(
     type='YOLOX',
     input_size=img_scale,
@@ -21,16 +23,19 @@ model = dict(
     random_size_interval=10,
     backbone=dict(
         type='CSPDarknet', 
+        norm_cfg=norm_cfg,
         act_cfg=dict(type='LeakyReLU', negative_slope=0.1),
         deepen_factor=0.33, widen_factor=0.5),
     neck=dict(
         type='YOLOXPAFPN',
+        norm_cfg=norm_cfg,
         in_channels=[128, 256, 512],
         out_channels=128,
         act_cfg=dict(type='LeakyReLU', negative_slope=0.1),
         num_csp_blocks=1),
     bbox_head=dict(
         type='YOLOXHead', 
+        norm_cfg=norm_cfg,
         num_classes=80, 
         act_cfg=dict(type='LeakyReLU', negative_slope=0.1),
         in_channels=128, feat_channels=128),
@@ -107,8 +112,8 @@ test_pipeline = [
 ]
 
 data = dict(
-    samples_per_gpu=8,
-    workers_per_gpu=8,
+    samples_per_gpu=6,
+    workers_per_gpu=6,
     persistent_workers=True,
     train=train_dataset,
     val=dict(
@@ -133,7 +138,7 @@ optimizer = dict(
     paramwise_cfg=dict(norm_decay_mult=0., bias_decay_mult=0.))
 # optimizer_config = dict(grad_clip=None)
 optimizer_config = dict(_delete_=True,grad_clip=dict(max_norm=35, norm_type=2))
-max_epochs = 40
+max_epochs = 42
 num_last_epochs = 10
 resume_from = None
 interval = 2
