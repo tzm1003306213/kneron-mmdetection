@@ -22,6 +22,11 @@
   5. **Converting Kneron-NEF:** (toolchain feature)
      - Convert the trained pytorch model to [Kneron-NEF](http://doc.kneron.com/docs/#toolchain/manual/#5-nef-workflow) model, which could be used on Kneron hardware platform.
 
+## Quantization-Aware-Training
+    ```shell
+    CUDA_VISIBLE_DEVICES=0,1,2,3,4 tools/dist_train.sh configs/qat/yolox_s_8x8_300e_coco_img_norm.py 5 --weight-decay 3e-4 --lr 0.000002 --lr-qat 0.001 --min-lr 2e-9 --bitwidth-range 4 8 16 --act-bw-range 8 16 --opt fusedlamb --qat --state-dict work_dirs/latest.pth
+    ```
+
 ## License
 
 This project is released under the [Apache 2.0 license](LICENSE).
