@@ -4,17 +4,18 @@ img_scale = (640, 640)
 
 custom_imports = dict(imports=['kqat.mmcv.freeze_scheduler', 'kqat.mmcv.refine_hooks',
                                'kqat.mmcv.lr_scheduler', 'kqat.mmcv.kqat_loss_optimizer',
-                               'kqat.mmcv.prune_scheduler', 'kqat.mmcv.syncBN'],
+                               # 'kqat.mmcv.prune_scheduler', 
+                               'kqat.mmcv.syncBN'],
                       allow_failed_imports=False)
 custom_hooks_qat = [dict(type='FreezeScheduler', sched='12vC,18E,24d,33p', priority='HIGH'),
                 dict(type='RefineHooks', kqat_loss=True, priority='VERY_LOW'),
                 dict(type='LrScheduler', sched='cosine', lr_cycle_limit=3, cooldown_epochs=6, priority='VERY_HIGH'),
                 dict(type='KqatOptimizerHook', tao=0.55, gamma=10),
-                dict(type='PruneScheduler', policy='policy.json'),
+                # dict(type='PruneScheduler', policy='policy.json'),
                 dict(type='SyncBN')]
 find_unused_parameters = True
 
-load_from = 'work_dirs/yolox_s_8x8_300e_coco_img_norm/latest.pth'
+load_from = 'work_dirs/yolox_s_8x8_300e_coco_img_norm/0.368map_mac93.pth'
 # model settings
 # norm_cfg = dict(type='SyncBN', requires_grad=True)
 
