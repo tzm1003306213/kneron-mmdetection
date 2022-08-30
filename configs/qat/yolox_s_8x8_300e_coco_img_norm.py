@@ -4,13 +4,14 @@ img_scale = (640, 640)
 
 custom_imports = dict(imports=['kqat.mmcv.freeze_scheduler', 'kqat.mmcv.refine_hooks',
                                'kqat.mmcv.lr_scheduler', 'kqat.mmcv.kqat_loss_optimizer',
-                               'kqat.mmcv.prune_scheduler', 'kqat.mmcv.syncBN'],
+                               #'kqat.mmcv.prune_scheduler', 
+                               'kqat.mmcv.syncBN'],
                       allow_failed_imports=False)
-custom_hooks_qat = [dict(type='FreezeScheduler', sched='12vC,18E,24d,33p', priority='HIGH'),
+custom_hooks_qat = [dict(type='FreezeScheduler', sched='0C,4v,5E,6d,10p', priority='HIGH'),
                 dict(type='RefineHooks', kqat_loss=True, priority='VERY_LOW'),
-                dict(type='LrScheduler', sched='cosine', lr_cycle_limit=3, cooldown_epochs=6, priority='VERY_HIGH'),
-                dict(type='KqatOptimizerHook', tao=0.55, gamma=10),
-                dict(type='PruneScheduler', policy='policy.json'),
+                dict(type='LrScheduler', sched='cosine', lr_cycle_limit=2, cooldown_epochs=3, priority='VERY_HIGH'),
+                dict(type='KqatOptimizerHook', tao=0.5, gamma=30),
+                # dict(type='PruneScheduler', policy='policy.json'),
                 dict(type='SyncBN')]
 find_unused_parameters = True
 
@@ -135,7 +136,7 @@ optimizer = dict(
     paramwise_cfg=dict(norm_decay_mult=0., bias_decay_mult=0.))
 # optimizer_config = dict(grad_clip=None)
 optimizer_config = dict(_delete_=True,grad_clip=dict(max_norm=35, norm_type=2))
-max_epochs = 42
+max_epochs = 15
 num_last_epochs = max_epochs - 1
 resume_from = None
 interval = 1
