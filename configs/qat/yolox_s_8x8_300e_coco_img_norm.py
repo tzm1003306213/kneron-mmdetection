@@ -7,10 +7,10 @@ custom_imports = dict(imports=['kqat.mmcv.freeze_scheduler', 'kqat.mmcv.refine_h
                                #'kqat.mmcv.prune_scheduler', 
                                'kqat.mmcv.syncBN'],
                       allow_failed_imports=False)
-custom_hooks_qat = [dict(type='FreezeScheduler', sched='0C,4v,5E,6d,10p', priority='HIGH'),
+custom_hooks_qat = [dict(type='FreezeScheduler', sched='2C,3v,4E,6d,10p', priority='HIGH'),
                 dict(type='RefineHooks', kqat_loss=True, priority='VERY_LOW'),
                 dict(type='LrScheduler', sched='cosine', lr_cycle_limit=2, cooldown_epochs=3, priority='VERY_HIGH'),
-                dict(type='KqatOptimizerHook', tao=0.5, gamma=30),
+                dict(type='KqatOptimizerHook', tao=0.52, gamma=30),
                 # dict(type='PruneScheduler', policy='policy.json'),
                 dict(type='SyncBN')]
 find_unused_parameters = True
